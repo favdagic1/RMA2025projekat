@@ -35,7 +35,7 @@ fun FilterChipsRow(selectedCategory: String, onCategorySelected: (String) -> Uni
                     "Sport" -> "spo"
                     "Nauka/tehnologija" -> "sci"
                     "Sve" -> "all"
-                    "Zabava" -> "zabava"
+                    "Zabava" -> "none"
                     else -> category.lowercase()
                 })
             )
