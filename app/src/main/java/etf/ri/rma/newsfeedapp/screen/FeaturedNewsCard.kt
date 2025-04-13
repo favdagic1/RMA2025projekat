@@ -28,7 +28,7 @@ fun FeaturedNewsCard(newsItem: NewsItem) {
             newsItem.imageUrl?.let { url ->
                 Image(
                     painter = rememberAsyncImagePainter(model = url),
-                    contentDescription = "Slika članka",
+                    contentDescription = "image",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),

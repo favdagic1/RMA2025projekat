@@ -26,7 +26,7 @@ fun StandardNewsCard(newsItem: NewsItem) {
             newsItem.imageUrl?.let { url ->
                 Image(
                     painter = rememberAsyncImagePainter(model = url),
-                    contentDescription = "Slika članka",
+                    contentDescription = "image",
                     modifier = Modifier
                         .size(100.dp) // širina i visina thumbnaila
                         .clip(RoundedCornerShape(8.dp)), // blago zaobljeni uglovi
