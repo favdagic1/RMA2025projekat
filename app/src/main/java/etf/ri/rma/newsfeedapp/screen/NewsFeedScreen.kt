@@ -9,26 +9,46 @@ import etf.ri.rma.newsfeedapp.data.NewsData
 @Composable
 fun NewsFeedScreen() {
     var selectedCategory by remember { mutableStateOf("Sve") }
-    // Dohvati sve vijesti
+    var sortOrder by remember { mutableStateOf(SortOrder.NONE) }
+
     val allNews = remember { NewsData.getAllNews() }
-    // Filtriraj vijesti prema odabranoj kategoriji. Ako je "Sve", prikazuje se kompletna lista.
+
     val filteredNews = if (selectedCategory == "Sve") {
         allNews
     } else {
+
         allNews.filter { it.category == selectedCategory }
     }
 
+    val sortedNews = when (sortOrder) {
+        SortOrder.ASC -> filteredNews.sortedBy { it.source }
+        SortOrder.DESC -> filteredNews.sortedByDescending { it.source }
+        else -> filteredNews
+    }
+
+
     Column(modifier = Modifier.fillMaxSize()) {
-        // Prikaz filter čipova
+
         FilterChipsRow(
             selectedCategory = selectedCategory,
-            onCategorySelected = { selectedCategory = it }
+            onCategorySelected = { category ->
+                selectedCategory = category
+                // Reset sort order when category changes.
+                sortOrder = SortOrder.NONE
+            }
         )
-        // Ako nema vijesti za odabranu kategoriju, prikaži MessageCard; inače prikaži NewsList
-        if(filteredNews.isEmpty()) {
+        // Sorting Row using sort chips defined in SortByAlpha.kt
+        SortByAlpha(
+            sortOrder = sortOrder,
+            onSortChanged = { newSort ->
+                sortOrder = newSort
+            }
+        )
+        // Display message if no news are available, otherwise display the list
+        if (sortedNews.isEmpty()) {
             MessageCard(message = "Nema pronađenih vijesti u kategoriji $selectedCategory")
         } else {
-            NewsList(newsItems = filteredNews)
+            NewsList(newsItems = sortedNews)
         }
     }
 }
