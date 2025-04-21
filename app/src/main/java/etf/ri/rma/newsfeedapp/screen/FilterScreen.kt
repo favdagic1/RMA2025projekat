@@ -177,5 +177,16 @@ fun FilterScreen(navController: NavHostController) {
         ) {
             Text("Primijeni filtere")
         }
+        Button(
+            onClick = {
+                // Simply pop back to the previous screen instead of navigating to a new one.
+                navController.popBackStack()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("filter_home_button")
+        ) {
+            Text("Početna")
+        }
     }
 }
