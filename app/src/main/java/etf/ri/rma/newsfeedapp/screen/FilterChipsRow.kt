@@ -1,7 +1,7 @@
 package etf.ri.rma.newsfeedapp.screen
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,10 +10,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.flowlayout.FlowRow
 
-
 @Composable
 fun FilterChipsRow(selectedCategory: String, onCategorySelected: (String) -> Unit) {
-    val categories = listOf("Sve", "Politika", "Sport","Nauka/tehnologija" ,"Zabava" )
+    val categories = listOf(
+        "Sve",
+        "Politika",
+        "Sport",
+        "Nauka/tehnologija",
+        "Zabava",
+        "Više filtera…"
+    )
+
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -25,19 +32,20 @@ fun FilterChipsRow(selectedCategory: String, onCategorySelected: (String) -> Uni
             FilterChip(
                 selected = category == selectedCategory,
                 onClick = {
-                    if (category != selectedCategory) {
-                        onCategorySelected(category)
-                    }
+                    onCategorySelected(category)
                 },
                 label = { Text(text = category) },
-                modifier = Modifier.testTag("filter_chip_" + when(category) {
-                    "Politika" -> "pol"
-                    "Sport" -> "spo"
-                    "Nauka/tehnologija" -> "sci"
-                    "Sve" -> "all"
-                    "Zabava" -> "none"
-                    else -> category.lowercase()
-                })
+                modifier = Modifier.testTag(
+                    "filter_chip_" + when (category) {
+                        "Sve" -> "all"
+                        "Politika" -> "pol"
+                        "Sport" -> "spo"
+                        "Nauka/tehnologija" -> "sci"
+                        "Zabava" -> "none"
+                        "Više filtera…" -> "more"
+                        else -> category.lowercase().replace(" ", "_")
+                    }
+                )
             )
         }
     }
