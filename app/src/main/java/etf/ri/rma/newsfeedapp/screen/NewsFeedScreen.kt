@@ -9,102 +9,96 @@ import androidx.navigation.NavHostController
 import etf.ri.rma.newsfeedapp.data.NewsData
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.ArrayList
 
 @Composable
 fun NewsFeedScreen(navController: NavHostController) {
-    // 1) definiramo stanja za filtere
-    var selectedCategory by rememberSaveable { mutableStateOf("Sve") }
-    var appliedStartDate by rememberSaveable { mutableStateOf<String?>(null) }
-    var appliedEndDate by rememberSaveable { mutableStateOf<String?>(null) }
+    // 1) State za glavni filter
+    var selectedCategory     by rememberSaveable { mutableStateOf("Sve") }
+    var appliedStartDate     by rememberSaveable { mutableStateOf<String?>(null) }
+    var appliedEndDate       by rememberSaveable { mutableStateOf<String?>(null) }
     val appliedUnwantedWords = remember { mutableStateListOf<String>() }
 
-    // formateri za datume
-    val displayFormatter = remember { DateTimeFormatter.ofPattern("dd-MM-yyyy") }
-    val dataFormatter    = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
+    // 2) Format koji svi dijelovi koriste
+    val dateFmt = remember { DateTimeFormatter.ofPattern("dd-MM-yyyy") }
 
-    // svi podaci
-    val allNews = remember { NewsData.getAllNews() }
-
-    // 2) čitanje filtera iz SavedStateHandle
-    val savedState = navController.currentBackStackEntry?.savedStateHandle
-    LaunchedEffect(savedState) {
-        savedState
-            ?.get<String>("filterCategory")
-            ?.also {
+    // 3) Uvijek pri kompoziciji "povuci" najnovije state iz FilterScreen-a
+    navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.let { handle ->
+            handle.get<String>("filterCategory")?.let {
                 selectedCategory = it
-                savedState.remove<String>("filterCategory")
+                handle.remove<String>("filterCategory")
             }
-
-        val fs = savedState?.get<String>("filterStartDate")
-        val fe = savedState?.get<String>("filterEndDate")
-        if (!fs.isNullOrEmpty() && !fe.isNullOrEmpty()) {
-            appliedStartDate = fs
-            appliedEndDate   = fe
-            savedState.remove<String>("filterStartDate")
-            savedState.remove<String>("filterEndDate")
+            handle.get<String>("filterStartDate")?.let {
+                appliedStartDate = it
+                handle.remove<String>("filterStartDate")
+            }
+            handle.get<String>("filterEndDate")?.let {
+                appliedEndDate = it
+                handle.remove<String>("filterEndDate")
+            }
+            handle.get<ArrayList<String>>("filterUnwantedWords")?.let { list ->
+                appliedUnwantedWords.clear()
+                appliedUnwantedWords.addAll(list)
+                handle.remove<ArrayList<String>>("filterUnwantedWords")
+            }
         }
 
-        savedState
-            ?.get<ArrayList<String>>("filterUnwantedWords")
-            ?.also {
-                appliedUnwantedWords.clear()
-                appliedUnwantedWords.addAll(it)
-                savedState.remove<ArrayList<String>>("filterUnwantedWords")
+    // 4) Dohvati i filtriraj vijesti
+    val allNews = remember { NewsData.getAllNews() }
+    val byCategory = if (selectedCategory == "Sve") allNews
+    else allNews.filter { it.category == selectedCategory }
+    val byDate = if (appliedStartDate != null && appliedEndDate != null) {
+        val start = LocalDate.parse(appliedStartDate, dateFmt)
+        val end   = LocalDate.parse(appliedEndDate,   dateFmt)
+        byCategory.filter {
+            val pub = LocalDate.parse(it.publishedDate, dateFmt)
+            !pub.isBefore(start) && !pub.isAfter(end)
+        }
+    } else byCategory
+    val fullyFiltered = if (appliedUnwantedWords.isNotEmpty()) {
+        byDate.filter { item ->
+            appliedUnwantedWords.none { uw ->
+                item.title.contains(uw, ignoreCase = true)
+                        || item.snippet.contains(uw, ignoreCase = true)
             }
-    }
+        }
+    } else byDate
 
-    // 3a) filtriranje po kategoriji
-    val byCategory = remember(allNews, selectedCategory) {
-        if (selectedCategory == "Sve") allNews
-        else allNews.filter { it.category == selectedCategory }
-    }
-    // 3b) filtriranje po datumu
-    val byDate = remember(byCategory, appliedStartDate, appliedEndDate) {
-        if (appliedStartDate != null && appliedEndDate != null) {
-            val start = LocalDate.parse(appliedStartDate, displayFormatter)
-            val end   = LocalDate.parse(appliedEndDate,   displayFormatter)
-            byCategory.filter {
-                val pub = LocalDate.parse(it.publishedDate, dataFormatter)
-                !pub.isBefore(start) && !pub.isAfter(end)
-            }
-        } else byCategory
-    }
-    // 3c) filtriranje po nepoželjnim riječima
-    val fullyFiltered = remember(byDate, appliedUnwantedWords) {
-        if (appliedUnwantedWords.isNotEmpty()) {
-            byDate.filter { item ->
-                appliedUnwantedWords.none { uw ->
-                    item.title.contains(uw, ignoreCase = true)
-                            || item.snippet.contains(uw, ignoreCase = true)
-                }
-            }
-        } else byDate
-    }
-
-    // 4) UI
+    // 5) UI
     Column(modifier = Modifier.fillMaxSize()) {
-        // chipovi i navigacija na FilterScreen
         FilterChipsRow(
-            selectedCategory = selectedCategory,
+            selectedCategory   = selectedCategory,
             onCategorySelected = { cat ->
                 if (cat == "Više filtera…") {
-                    navController.navigate("/filters")
+                    // spremi state u handle
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("filterCategory", selectedCategory)
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("filterStartDate", appliedStartDate)
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("filterEndDate", appliedEndDate)
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("filterUnwantedWords", ArrayList(appliedUnwantedWords))
+                    // idi na novi ekran
+                    navController.navigate("filters")
                 } else {
                     selectedCategory = cat
                 }
             }
         )
 
-        // lista vijesti ili poruka
         if (fullyFiltered.isEmpty()) {
             MessageCard(message = "Nema pronađenih vijesti")
         } else {
             NewsList(
-                newsItems  = fullyFiltered,
-                onItemClick = { id ->
-                    navController.navigate("/details/$id")
-                }
+                newsItems   = fullyFiltered,
+                // **OVDJE**: obavezno bez vodećeg '/'
+                onItemClick = { id -> navController.navigate("details/$id") }
             )
         }
     }

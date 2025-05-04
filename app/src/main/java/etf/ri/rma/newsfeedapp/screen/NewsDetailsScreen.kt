@@ -19,16 +19,14 @@ import java.util.*
 
 @Composable
 fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
-    // 1) dohvatimo sve vijesti i pronađemo onu kliknutu
-    val allNews: List<NewsItem> = NewsData.getAllNews()
-    val current = allNews.find { it.id.toString() == newsId } ?: return
+    val allNews = NewsData.getAllNews()
+    val current = allNews.find { it.id == newsId } ?: return
 
-    // formatter za parsedDate iz modela ("yyyy-MM-dd")
-    val dataFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
-    val currentDate = LocalDate.parse(current.publishedDate, dataFormatter)
+    // Parsiraj prema `dd-MM-yyyy`
+    val dataFormatter = remember { DateTimeFormatter.ofPattern("dd-MM-yyyy") }
+    val currentDate   = LocalDate.parse(current.publishedDate, dataFormatter)
 
-    // 2) izračun najbližih dvije vijesti iste kategorije
-    val related: List<NewsItem> = allNews
+    val related = allNews
         .filter { it.category == current.category && it.id != current.id }
         .map { other ->
             val d = LocalDate.parse(other.publishedDate, dataFormatter)
@@ -36,9 +34,9 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
         }
         .sortedWith(
             compareBy<Pair<NewsItem, Long>>(
-                { it.second },                             // prvo po udaljenosti
-                { it.first.publishedDate },                // zatim po datumu (string leksikografski)
-                { it.first.title.lowercase(Locale.getDefault()) } // pa po naslovu
+                { it.second },
+                { it.first.publishedDate },
+                { it.first.title.lowercase(Locale.getDefault()) }
             )
         )
         .map { it.first }
@@ -49,90 +47,71 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Naslov
-        Text(
-            text = current.title,
-            style = MaterialTheme.typography.titleLarge,
+        Text(current.title,
+            style    = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("details_title")
         )
         Spacer(Modifier.height(8.dp))
-
-        // Sažetak
-        Text(
-            text = current.snippet,
-            style = MaterialTheme.typography.bodyMedium,
+        Text(current.snippet,
+            style    = MaterialTheme.typography.bodyMedium,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("details_snippet")
         )
         Spacer(Modifier.height(8.dp))
-
-        // Kategorija
-        Text(
-            text = current.category,
-            style = MaterialTheme.typography.bodySmall,
+        Text(current.category,
+            style    = MaterialTheme.typography.bodySmall,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("details_category")
         )
         Spacer(Modifier.height(4.dp))
-
-        // Izvor
-        Text(
-            text = current.source,
-            style = MaterialTheme.typography.bodySmall,
+        Text(current.source,
+            style    = MaterialTheme.typography.bodySmall,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("details_source")
         )
         Spacer(Modifier.height(4.dp))
-
-        // Datum
-        Text(
-            text = current.publishedDate,
-            style = MaterialTheme.typography.bodySmall,
+        Text(current.publishedDate,
+            style    = MaterialTheme.typography.bodySmall,
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("details_date")
         )
         Spacer(Modifier.height(16.dp))
-
-        // Povezane vijesti
-        Text(
-            text = "Povezane vijesti iz iste kategorije:",
-            style = MaterialTheme.typography.titleMedium
-        )
+        Text("Povezane vijesti iz iste kategorije:",
+            style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(8.dp))
-
-        related.forEachIndexed { index, item ->
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.bodyMedium,
+        related.forEachIndexed { idx, item ->
+            Text(item.title,
+                style    = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { navController.navigate("/details/${item.id}") }
+                    .clickable {
+                        navController.navigate("details/${item.id}") {
+                            popUpTo("home") { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
                     .padding(vertical = 4.dp)
-                    .testTag("related_news_title_${index + 1}")
+                    .testTag("related_news_title_${idx+1}")
             )
         }
         Spacer(Modifier.height(24.dp))
-
-        // Zatvori detalje
         Button(
             onClick = {
-                navController.navigate("/home") {
-                    // izbriši sve ekrane iz back stack‑a do /home
-                    popUpTo("/home") { inclusive = false }
-                    // da ne bi stavilo još jedan /home na vrh
+                navController.navigate("home") {
+                    popUpTo("home") { inclusive = false }
                     launchSingleTop = true
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("details_close_button")
-        )  {
+        ) {
             Text("Zatvori detalje")
         }
     }

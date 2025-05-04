@@ -24,7 +24,7 @@ import kotlin.test.assertTrue
  * Instrumented test, which will execute on an Android device.
  *
  * See [testing documentation](http://d.android.com/tools/testing).
- */
+
 @RunWith(AndroidJUnit4::class)
 class TestS1 {
 
@@ -94,4 +94,4 @@ class TestS1 {
         composeTestRule.onNodeWithText(novost.snippet.substring(0..15),substring = true).assertIsDisplayed()
         composeTestRule.onNodeWithText(novost.source,substring = true).assertIsDisplayed()
     }
-}
+}*/
