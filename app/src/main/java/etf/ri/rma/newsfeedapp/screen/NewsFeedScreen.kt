@@ -2,103 +2,53 @@ package etf.ri.rma.newsfeedapp.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import etf.ri.rma.newsfeedapp.data.NewsData
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import etf.ri.rma.newsfeedapp.viewmodel.NewsViewModel
 
 @Composable
 fun NewsFeedScreen(navController: NavHostController) {
-    // 1) State za glavni filter
-    var selectedCategory     by rememberSaveable { mutableStateOf("Sve") }
-    var appliedStartDate     by rememberSaveable { mutableStateOf<String?>(null) }
-    var appliedEndDate       by rememberSaveable { mutableStateOf<String?>(null) }
-    val appliedUnwantedWords = remember { mutableStateListOf<String>() }
+    // Dohvat ViewModela
+    val vm: NewsViewModel = viewModel()
 
-    // 2) Format koji svi dijelovi koriste
-    val dateFmt = remember { DateTimeFormatter.ofPattern("dd-MM-yyyy") }
+    // Pretplata na trenutačnu listu vijesti
+    val newsList by vm.displayListFlow.collectAsState()
 
-    // 3) Uvijek pri kompoziciji "povuci" najnovije state iz FilterScreen-a
-    navController.currentBackStackEntry
-        ?.savedStateHandle
-        ?.let { handle ->
-            handle.get<String>("filterCategory")?.let {
-                selectedCategory = it
-                handle.remove<String>("filterCategory")
-            }
-            handle.get<String>("filterStartDate")?.let {
-                appliedStartDate = it
-                handle.remove<String>("filterStartDate")
-            }
-            handle.get<String>("filterEndDate")?.let {
-                appliedEndDate = it
-                handle.remove<String>("filterEndDate")
-            }
-            handle.get<ArrayList<String>>("filterUnwantedWords")?.let { list ->
-                appliedUnwantedWords.clear()
-                appliedUnwantedWords.addAll(list)
-                handle.remove<ArrayList<String>>("filterUnwantedWords")
-            }
-        }
+    // Držimo trenutno izabranu kategoriju
+    var selectedCategory by remember { mutableStateOf("Sve") }
 
-    // 4) Dohvati i filtriraj vijesti
-    val allNews = remember { NewsData.getAllNews() }
-    val byCategory = if (selectedCategory == "Sve") allNews
-    else allNews.filter { it.category == selectedCategory }
-    val byDate = if (appliedStartDate != null && appliedEndDate != null) {
-        val start = LocalDate.parse(appliedStartDate, dateFmt)
-        val end   = LocalDate.parse(appliedEndDate,   dateFmt)
-        byCategory.filter {
-            val pub = LocalDate.parse(it.publishedDate, dateFmt)
-            !pub.isBefore(start) && !pub.isAfter(end)
-        }
-    } else byCategory
-    val fullyFiltered = if (appliedUnwantedWords.isNotEmpty()) {
-        byDate.filter { item ->
-            appliedUnwantedWords.none { uw ->
-                item.title.contains(uw, ignoreCase = true)
-                        || item.snippet.contains(uw, ignoreCase = true)
-            }
-        }
-    } else byDate
+    // Prvi put prikazujemo sve inicijalne vijesti
+    LaunchedEffect(Unit) {
+        vm.loadTopStories("Sve")
+    }
 
-    // 5) UI
     Column(modifier = Modifier.fillMaxSize()) {
         FilterChipsRow(
-            selectedCategory   = selectedCategory,
+            selectedCategory = selectedCategory,
             onCategorySelected = { cat ->
+                selectedCategory = cat
                 if (cat == "Više filtera…") {
-                    // spremi state u handle
                     navController.currentBackStackEntry
                         ?.savedStateHandle
                         ?.set("filterCategory", selectedCategory)
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("filterStartDate", appliedStartDate)
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("filterEndDate", appliedEndDate)
-                    navController.currentBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("filterUnwantedWords", ArrayList(appliedUnwantedWords))
-                    // idi na novi ekran
                     navController.navigate("filters")
                 } else {
-                    selectedCategory = cat
+                    vm.loadTopStories(cat)
                 }
             }
         )
 
-        if (fullyFiltered.isEmpty()) {
-            MessageCard(message = "Nema pronađenih vijesti")
+        if (newsList.isEmpty()) {
+            CircularProgressIndicator(modifier = Modifier.fillMaxSize())
         } else {
             NewsList(
-                newsItems   = fullyFiltered,
-                // **OVDJE**: obavezno bez vodećeg '/'
-                onItemClick = { id -> navController.navigate("details/$id") }
+                newsItems = newsList,
+                onItemClick = { id ->
+                    navController.navigate("details/$id")
+                }
             )
         }
     }
