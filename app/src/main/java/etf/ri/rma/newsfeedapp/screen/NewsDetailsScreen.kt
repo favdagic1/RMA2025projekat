@@ -30,7 +30,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
 
     // 4) Pronađemo odabranu vijest
     val current = remember(allNews, newsId) {
-        allNews.find { it.id == newsId }
+        allNews.find { it.uuid == newsId }
     } ?: return
 
     // 5) Pozivamo DAO-e (slične vijesti i tagove) odmah pri otvaranju
@@ -131,7 +131,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            navController.navigate("details/${item.id}") {
+                            navController.navigate("details/${item.uuid}") {
                                 popUpTo("home") { inclusive = false }
                                 launchSingleTop = true
                             }

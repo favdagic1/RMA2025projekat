@@ -11,7 +11,7 @@ import java.net.URL
 class ImagaDAO {
     private lateinit var apiService: ImagaApiService
     private val tagsCache = mutableMapOf<String, List<String>>()
-    private val IMAGGA_API_TOKEN = "demo"
+    private val IMAGGA_API_TOKEN = "acc_bd7c68cd93e2991"
 
     fun setApiService(service: ImagaApiService) {
         apiService = service

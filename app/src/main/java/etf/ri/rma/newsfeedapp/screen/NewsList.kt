@@ -30,7 +30,7 @@ fun NewsList(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onItemClick(item.id) }
+                    .clickable { onItemClick(item.uuid) }
             ) {
                 if (item.isFeatured) {
                     FeaturedNewsCard(newsItem = item)

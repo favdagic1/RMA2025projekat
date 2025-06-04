@@ -15,111 +15,111 @@ class NewsDAO {
     private val topStoriesCache = mutableMapOf<String, Pair<List<NewsItem>, Long>>()
     private val CACHE_DURATION_MS = 30_000L
     private val similarCache = mutableMapOf<String, List<NewsItem>>()
-    private val API_TOKEN = "demo"
+    private val API_TOKEN = "g1pNUtBbRf99dRokQ3zRoFfsjcAnIjr3545puKCS"
 
     init {
         // (inicijalna 10 vijesti – u svakoj zamijeniti 'id = ...' s 'uuid = ...')
         allStories.addAll(
             listOf(
                 NewsItem(
-                    uuid = "init-1",
-                    title = "Početna vijest Politika 1",
-                    snippet = "Izvorna politička vijest 1",
-                    imageUrl = null,
-                    category = "politics",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "01-03-2025"
+                    "b19feda9-099f-41e7-af2c-86fd551a3e2c",
+                    "Nova era AI tehnologije",
+                    "Umjetna inteligencija ulazi u svakodnevni život.",
+                    "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+                    "general",
+                    false,
+                    "manual",
+                    "01-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-2",
-                    title = "Početna vijest Sport 1",
-                    snippet = "Izvorna sportska vijest 1",
-                    imageUrl = null,
-                    category = "sports",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "02-03-2025"
+                    "4660b476-d4bb-4f2b-92e4-a7ebd1ada086",
+                    "Sport: Finalni turnir u Parizu",
+                    "Spektakularna završnica nogometnog prvenstva.",
+                    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+                    "sports",
+                    false,
+                    "manual",
+                    "02-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-3",
-                    title = "Početna vijest Nauka 1",
-                    snippet = "Izvorna znanstvena vijest 1",
-                    imageUrl = null,
-                    category = "science",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "03-03-2025"
+                    "242f4b59-e4e1-428c-b35d-47ac382995a7",
+                    "Nova vlada položila zakletvu",
+                    "Političke promjene nakon izbora.",
+                    "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f",
+                    "politics",
+                    false,
+                    "manual",
+                    "03-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-4",
-                    title = "Početna vijest Business 1",
-                    snippet = "Izvorna poslovna vijest 1",
-                    imageUrl = null,
-                    category = "business",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "04-03-2025"
+                    "99820c22-8a4a-498a-b768-957e8930bd73",
+                    "Znanstvenici otkrili novi materijal",
+                    "Napredak u razvoju održivih tehnologija.",
+                    "https://images.unsplash.com/photo-1503676382389-4809596d5290",
+                    "science",
+                    false,
+                    "manual",
+                    "04-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-5",
-                    title = "Početna vijest Health 1",
-                    snippet = "Izvorna zdravstvena vijest 1",
-                    imageUrl = null,
-                    category = "health",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "05-03-2025"
+                    "ed7e79b4-8e83-4960-a6ba-8099a9a8485fa",
+                    "Ekonomija: Analiza tržišta",
+                    "Povećanje zaposlenosti i stabilan rast.",
+                    "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+                    "business",
+                    false,
+                    "manual",
+                    "05-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-6",
-                    title = "Početna vijest Entertainment 1",
-                    snippet = "Izvorna zabavna vijest 1",
-                    imageUrl = null,
-                    category = "entertainment",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "06-03-2025"
+                    "a85fbb63-4cda-4cea-a2b3-734f1099da9a",
+                    "Tehnologija: Novi pametni telefon",
+                    "Revolucija u mobilnoj industriji.",
+                    "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1",
+                    "science",
+                    false,
+                    "manual",
+                    "06-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-7",
-                    title = "Početna vijest Tech 1",
-                    snippet = "Izvorna tehnološka vijest 1",
-                    imageUrl = null,
-                    category = "tech",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "07-03-2025"
+                    "dc562726-5aad-400c-a18d-b94629abb517",
+                    "Kultura: Filmski festival počinje sutra",
+                    "Najbolji filmovi godine u konkurenciji.",
+                    "https://images.unsplash.com/photo-1464983953574-0892a716854b",
+                    "entertainment",
+                    false,
+                    "manual",
+                    "07-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-8",
-                    title = "Početna vijest Politika 2",
-                    snippet = "Izvorna politička vijest 2",
-                    imageUrl = null,
-                    category = "politics",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "08-03-2025"
+                    "9a2f1e00-95ec-4d56-b36a-c16ca1b076cd",
+                    "Zdravlje: Novi lijek protiv gripe",
+                    "Medicinski napredak u prevenciji bolesti.",
+                    "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
+                    "science",
+                    false,
+                    "manual",
+                    "08-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-9",
-                    title = "Početna vijest Sport 2",
-                    snippet = "Izvorna sportska vijest 2",
-                    imageUrl = null,
-                    category = "sports",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "09-03-2025"
+                    "126cf7a0-e920-427e-b02c-c1853747cefc",
+                    "Putovanja: Skriveni dragulji Balkana",
+                    "Najljepše destinacije za ljeto 2025.",
+                    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+                    "general",
+                    false,
+                    "manual",
+                    "09-06-2025"
                 ),
                 NewsItem(
-                    uuid = "init-10",
-                    title = "Početna vijest Nauka 2",
-                    snippet = "Izvorna znanstvena vijest 2",
-                    imageUrl = null,
-                    category = "science",
-                    isFeatured = false,
-                    source = "Example",
-                    publishedDate = "10-03-2025"
+                    "5dc5754f-90e8-4d22-b0d2-872fcf9384cb",
+                    "Zabava: Ljetni muzički festival",
+                    "Poznati izvođači nastupaju uživo.",
+                    "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
+                    "entertainment",
+                    false,
+                    "manual",
+                    "10-06-2025"
                 )
             )
         )
@@ -217,7 +217,7 @@ class NewsDAO {
         }
 
         fetchedItems.forEach { item ->
-            val idx = allStories.indexOfFirst { it.id == item.id }
+            val idx = allStories.indexOfFirst { it.uuid == item.uuid }
             if (idx >= 0) {
                 val existing = allStories.removeAt(idx)
                 allStories.add(0, existing)
