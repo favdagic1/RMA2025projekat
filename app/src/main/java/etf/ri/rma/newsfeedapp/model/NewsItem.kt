@@ -7,11 +7,11 @@ data class NewsItem(
     val snippet: String,
     val imageUrl: String?,
     val category: String,
+
     var isFeatured: Boolean,
+    val imageTags: ArrayList<String> = arrayListOf(),
     val source: String,
     val publishedDate: String
-) {
 
-    val id: String
-        get() = uuid
-}
+
+)

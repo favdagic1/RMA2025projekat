@@ -28,6 +28,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
                     "general",
                     false,
+                    arrayListOf(),
                     "manual",
                     "01-06-2025"
                 ),
@@ -38,6 +39,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
                     "sports",
                     false,
+                    arrayListOf(),
                     "manual",
                     "02-06-2025"
                 ),
@@ -48,6 +50,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f",
                     "politics",
                     false,
+                    arrayListOf(),
                     "manual",
                     "03-06-2025"
                 ),
@@ -58,6 +61,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1503676382389-4809596d5290",
                     "science",
                     false,
+                    arrayListOf(),
                     "manual",
                     "04-06-2025"
                 ),
@@ -68,6 +72,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
                     "business",
                     false,
+                    arrayListOf(),
                     "manual",
                     "05-06-2025"
                 ),
@@ -78,6 +83,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1",
                     "science",
                     false,
+                    arrayListOf(),
                     "manual",
                     "06-06-2025"
                 ),
@@ -88,6 +94,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1464983953574-0892a716854b",
                     "entertainment",
                     false,
+                    arrayListOf(),
                     "manual",
                     "07-06-2025"
                 ),
@@ -98,6 +105,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
                     "science",
                     false,
+                    arrayListOf(),
                     "manual",
                     "08-06-2025"
                 ),
@@ -107,7 +115,7 @@ class NewsDAO {
                     "Najljepše destinacije za ljeto 2025.",
                     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
                     "general",
-                    false,
+                    false,arrayListOf(),
                     "manual",
                     "09-06-2025"
                 ),
@@ -118,6 +126,7 @@ class NewsDAO {
                     "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
                     "entertainment",
                     false,
+                    arrayListOf(),
                     "manual",
                     "10-06-2025"
                 )
@@ -158,12 +167,13 @@ class NewsDAO {
         val fetchedItems = dtoList.map { dto ->
             val primaryCat = dto.categories?.firstOrNull() ?: ""
             NewsItem(
-                uuid = dto.uuid,               // ime parametra je sad `uuid`
+                uuid = dto.uuid,
                 title = dto.title,
                 snippet = dto.snippet ?: "",
                 imageUrl = dto.imageUrl,
                 category = primaryCat,
                 isFeatured = true,
+                imageTags = arrayListOf(),
                 source = dto.source ?: "",
                 publishedDate = dto.publishedAt ?: ""
             )
@@ -176,7 +186,7 @@ class NewsDAO {
         }
 
         fetchedItems.forEach { item ->
-            val idx = allStories.indexOfFirst { it.id == item.id }
+            val idx = allStories.indexOfFirst { it.uuid == item.uuid }
             if (idx >= 0) {
                 val existing = allStories.removeAt(idx)
                 existing.isFeatured = true
@@ -200,17 +210,18 @@ class NewsDAO {
         similarCache[uuid]?.let { return it }
 
         val response = apiService.getSimilarStories(uuid, API_TOKEN)
-        val dtoList = response.data
+        val dtoList = response.data.take(2)
 
         val fetchedItems = dtoList.map { dto ->
             val primaryCat = dto.categories?.firstOrNull() ?: ""
             NewsItem(
-                uuid = dto.uuid,               // opet: parametar je `uuid`
+                uuid = dto.uuid,
                 title = dto.title,
                 snippet = dto.snippet ?: "",
                 imageUrl = dto.imageUrl,
                 category = primaryCat,
                 isFeatured = false,
+                imageTags = arrayListOf(),
                 source = dto.source ?: "",
                 publishedDate = dto.publishedAt ?: ""
             )

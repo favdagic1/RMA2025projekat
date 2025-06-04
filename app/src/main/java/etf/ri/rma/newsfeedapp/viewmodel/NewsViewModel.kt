@@ -16,13 +16,19 @@ import retrofit2.converter.gson.GsonConverterFactory
 class NewsViewModel : ViewModel() {
 
     // 1) Retrofit i DAO-e
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("https://example.com/")
+    private val newsRetrofit = Retrofit.Builder()
+        .baseUrl("https://api.thenewsapi.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    private val newsApiService: NewsApiService = retrofit.create(NewsApiService::class.java)
-    private val imaggaApiService: ImagaApiService = retrofit.create(ImagaApiService::class.java)
+    private val imaggaRetrofit = Retrofit.Builder()
+        .baseUrl("https://api.imagga.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    private val newsApiService: NewsApiService = newsRetrofit.create(NewsApiService::class.java)
+    private val imaggaApiService: ImagaApiService = imaggaRetrofit.create(ImagaApiService::class.java)
+
 
     private val newsDAO = NewsDAO().apply { setApiService(newsApiService) }
     private val imaggaDAO = ImagaDAO().apply { setApiService(imaggaApiService) }
@@ -63,9 +69,13 @@ class NewsViewModel : ViewModel() {
                 val trenutno = newsDAO.getAllStories().filter { it.category == eng }
                 _displayListFlow.value = trenutno
 
-                val fetched = newsDAO.getTopStoriesByCategory(eng)
-                _allStoriesFlow.value = newsDAO.getAllStories()
-                _displayListFlow.value = newsDAO.getAllStories().filter { it.category == eng }
+                try {
+                    newsDAO.getTopStoriesByCategory(eng)
+                    _allStoriesFlow.value = newsDAO.getAllStories()
+                    _displayListFlow.value = newsDAO.getAllStories().filter { it.category == eng }
+                } catch (e: Exception) {
+                    // Neuspješan mrežni poziv ne smije srušiti aplikaciju
+                }
             }
         }
     }
@@ -73,8 +83,12 @@ class NewsViewModel : ViewModel() {
     /** Učitava slične vijesti za zadani UUID */
     fun loadSimilarStories(uuid: String) {
         viewModelScope.launch {
-            val lista = newsDAO.getSimilarStories(uuid)
-            _similarStoriesFlow.value = lista
+            try {
+                val lista = newsDAO.getSimilarStories(uuid)
+                _similarStoriesFlow.value = lista
+            } catch (e: Exception) {
+                _similarStoriesFlow.value = emptyList()
+            }
         }
     }
 
@@ -84,6 +98,12 @@ class NewsViewModel : ViewModel() {
             try {
                 val tags = imaggaDAO.getTags(imageUrl)
                 _imageTagsFlow.value = tags
+                val all = newsDAO.getAllStories().toMutableList()
+                val item = all.find { it.imageUrl == imageUrl }
+                item?.let {
+                    it.imageTags.clear()
+                    it.imageTags.addAll(tags)
+                }
             } catch (e: Exception) {
                 _imageTagsFlow.value = emptyList()
             }
