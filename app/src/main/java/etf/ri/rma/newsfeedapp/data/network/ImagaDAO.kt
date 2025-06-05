@@ -33,10 +33,7 @@ class ImagaDAO {
     }
 
     companion object {
-        /**
-         * Pomoćna metoda za testove: stvori Retrofit s danim baseUrl,
-         * napravi ImagaApiService i nadoveži ga na novi ImagaDAO.
-         */
+
         fun createWithBaseUrl(baseUrl: String): ImagaDAO {
             val retrofit = Retrofit.Builder()
                 .baseUrl(baseUrl)

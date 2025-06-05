@@ -1,6 +1,5 @@
 package etf.ri.rma.newsfeedapp.data.network
 
-import etf.ri.rma.newsfeedapp.data.NewsApiResponse
 import etf.ri.rma.newsfeedapp.data.network.api.NewsApiService
 import etf.ri.rma.newsfeedapp.data.network.exception.InvalidUUIDException
 import etf.ri.rma.newsfeedapp.model.NewsItem
@@ -18,7 +17,7 @@ class NewsDAO {
     private val API_TOKEN = "g1pNUtBbRf99dRokQ3zRoFfsjcAnIjr3545puKCS"
 
     init {
-        // (inicijalna 10 vijesti – u svakoj zamijeniti 'id = ...' s 'uuid = ...')
+
         allStories.addAll(
             listOf(
                 NewsItem(
@@ -34,7 +33,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "4660b476-d4bb-4f2b-92e4-a7ebd1ada086",
-                    "Sport: Finalni turnir u Parizu",
+                    "Finalni turnir u Parizu",
                     "Spektakularna završnica nogometnog prvenstva.",
                     "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
                     "sports",
@@ -67,7 +66,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "ed7e79b4-8e83-4960-a6ba-8099a9a8485fa",
-                    "Ekonomija: Analiza tržišta",
+                    "Analiza tržišta",
                     "Povećanje zaposlenosti i stabilan rast.",
                     "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
                     "business",
@@ -78,7 +77,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "a85fbb63-4cda-4cea-a2b3-734f1099da9a",
-                    "Tehnologija: Novi pametni telefon",
+                    "Novi pametni telefon",
                     "Revolucija u mobilnoj industriji.",
                     "https://images.unsplash.com/photo-1454023492550-5696f8ff10e1",
                     "science",
@@ -89,7 +88,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "dc562726-5aad-400c-a18d-b94629abb517",
-                    "Kultura: Filmski festival počinje sutra",
+                    "Filmski festival počinje sutra",
                     "Najbolji filmovi godine u konkurenciji.",
                     "https://images.unsplash.com/photo-1464983953574-0892a716854b",
                     "entertainment",
@@ -100,7 +99,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "9a2f1e00-95ec-4d56-b36a-c16ca1b076cd",
-                    "Zdravlje: Novi lijek protiv gripe",
+                    "Novi lijek protiv gripe",
                     "Medicinski napredak u prevenciji bolesti.",
                     "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
                     "science",
@@ -111,7 +110,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "126cf7a0-e920-427e-b02c-c1853747cefc",
-                    "Putovanja: Skriveni dragulji Balkana",
+                    "Skriveni dragulji Balkana",
                     "Najljepše destinacije za ljeto 2025.",
                     "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
                     "general",
@@ -121,7 +120,7 @@ class NewsDAO {
                 ),
                 NewsItem(
                     "5dc5754f-90e8-4d22-b0d2-872fcf9384cb",
-                    "Zabava: Ljetni muzički festival",
+                    "Ljetni muzički festival",
                     "Poznati izvođači nastupaju uživo.",
                     "https://images.unsplash.com/photo-1470770841072-f978cf4d019e",
                     "entertainment",

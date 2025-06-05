@@ -26,7 +26,6 @@ fun SortByAlpha(
         FilterChip(
             selected = sortOrder == SortOrder.ASC,
             onClick = {
-                // aktivira ASC kad nije vec aktiviran, u suprotnom prestani sort.
                 if (sortOrder == SortOrder.ASC) onSortChanged(SortOrder.NONE)
                 else onSortChanged(SortOrder.ASC)
             },
@@ -36,7 +35,6 @@ fun SortByAlpha(
         FilterChip(
             selected = sortOrder == SortOrder.DESC,
             onClick = {
-                // aktiviraj DESC ako vec nije aktiviran, u suprotnom prestani .
                 if (sortOrder == SortOrder.DESC) onSortChanged(SortOrder.NONE)
                 else onSortChanged(SortOrder.DESC)
             },

@@ -17,12 +17,12 @@ class NewsViewModel : ViewModel() {
 
     // 1) Retrofit i DAO-e
     private val newsRetrofit = Retrofit.Builder()
-        .baseUrl("https://api.thenewsapi.com/")
+        .baseUrl("https://api.thenewsapi.com/v1/news/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     private val imaggaRetrofit = Retrofit.Builder()
-        .baseUrl("https://api.imagga.com/")
+        .baseUrl("https://api.imagga.com/v2/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -79,6 +79,53 @@ class NewsViewModel : ViewModel() {
             }
         }
     }
+
+    fun filterStories(
+        bosanskaKategorija: String,
+        startDate: String?,
+        endDate: String?,
+        unwantedWords: List<String>
+    ) {
+        viewModelScope.launch {
+            var stories = newsDAO.getAllStories()
+
+            // Filtriraj po kategoriji
+            val eng = categoryMap[bosanskaKategorija] ?: "all"
+            if (eng != "all") {
+                stories = stories.filter { it.category == eng }
+            }
+
+            // Filtriraj po datumu (ako su odabrani)
+            if (!startDate.isNullOrBlank() && !endDate.isNullOrBlank()) {
+                try {
+                    val formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                    val start = java.time.LocalDate.parse(startDate, formatter)
+                    val end = java.time.LocalDate.parse(endDate, formatter)
+                    stories = stories.filter {
+                        try {
+                            val published = java.time.LocalDate.parse(it.publishedDate, formatter)
+                            !published.isBefore(start) && !published.isAfter(end)
+                        } catch (e: Exception) { false }
+                    }
+                } catch (e: Exception) { /* ignore bad format */ }
+            }
+
+            // Filtriraj po nepoželjnim riječima
+            if (unwantedWords.isNotEmpty()) {
+                stories = stories.filter { item ->
+                    unwantedWords.none { word ->
+                        item.title.contains(word, ignoreCase = true) ||
+                                item.snippet.contains(word, ignoreCase = true)
+                    }
+                }
+            }
+
+            _displayListFlow.value = stories
+        }
+    }
+
+
+
 
     /** Učitava slične vijesti za zadani UUID */
     fun loadSimilarStories(uuid: String) {

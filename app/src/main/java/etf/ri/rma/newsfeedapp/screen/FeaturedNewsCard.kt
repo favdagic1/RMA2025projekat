@@ -24,7 +24,6 @@ fun FeaturedNewsCard(newsItem: NewsItem) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Ako postoji URL, prikaži sliku
             newsItem.imageUrl?.let { url ->
                 Image(
                     painter = rememberAsyncImagePainter(model = url),

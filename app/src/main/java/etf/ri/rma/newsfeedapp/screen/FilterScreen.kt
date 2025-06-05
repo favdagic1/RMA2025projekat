@@ -179,7 +179,7 @@ fun FilterScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- DUGME “PRIMIJENI FILTERE” ---
+
         Button(
             onClick = {
                 navController.previousBackStackEntry

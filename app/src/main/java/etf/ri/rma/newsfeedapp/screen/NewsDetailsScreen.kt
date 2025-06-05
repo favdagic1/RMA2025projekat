@@ -16,30 +16,36 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 import java.util.*
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 
 @Composable
 fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
     val vm: NewsViewModel = viewModel()
 
-    // 1) Pratimo sve vijesti u memoriji
+
     val allNews by vm.allStoriesFlow.collectAsState()
-    // 2) Pratimo slične vijesti
+
     val similarList by vm.similarStoriesFlow.collectAsState()
-    // 3) Pratimo tagove za sliku
+
     val imageTags by vm.imageTagsFlow.collectAsState()
 
-    // 4) Pronađemo odabranu vijest
+
     val current = remember(allNews, newsId) {
         allNews.find { it.uuid == newsId }
     } ?: return
 
-    // 5) Pozivamo DAO-e (slične vijesti i tagove) odmah pri otvaranju
+
     LaunchedEffect(newsId) {
         vm.loadSimilarStories(newsId)
         current.imageUrl?.let { vm.loadImageTags(it) }
     }
 
-    // 6) Parsiramo datum
+
     val formatter = remember { DateTimeFormatter.ofPattern("dd-MM-yyyy") }
     val curDate = LocalDate.parse(current.publishedDate, formatter)
 
@@ -48,7 +54,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Naslov
+
         Text(
             text = current.title,
             style = MaterialTheme.typography.titleLarge,
@@ -58,7 +64,19 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
         )
         Spacer(Modifier.height(8.dp))
 
-        // Sažetak
+        if (current.imageUrl != null) {
+            Image(
+                painter = rememberAsyncImagePainter(current.imageUrl),
+                contentDescription = "Slika vijesti",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+
         Text(
             text = current.snippet,
             style = MaterialTheme.typography.bodyMedium,
@@ -68,7 +86,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
         )
         Spacer(Modifier.height(8.dp))
 
-        // Kategorija
+
         Text(
             text = current.category,
             style = MaterialTheme.typography.bodySmall,
@@ -78,7 +96,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
         )
         Spacer(Modifier.height(4.dp))
 
-        // Izvor
+
         Text(
             text = current.source,
             style = MaterialTheme.typography.bodySmall,
@@ -88,7 +106,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
         )
         Spacer(Modifier.height(4.dp))
 
-        // Datum
+
         Text(
             text = current.publishedDate,
             style = MaterialTheme.typography.bodySmall,
@@ -98,7 +116,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
         )
         Spacer(Modifier.height(16.dp))
 
-        // Tagovi za sliku (ako postoji URL)
+
         if (current.imageUrl != null) {
             Text(
                 text = "Tagovi za sliku:",
@@ -115,7 +133,7 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
             Spacer(Modifier.height(16.dp))
         }
 
-        // Slične vijesti
+
         Text(
             text = "Slične vijesti:",
             style = MaterialTheme.typography.titleMedium
