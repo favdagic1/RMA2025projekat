@@ -16,4 +16,11 @@ interface NewsApiService {
         @Query("uuid") uuid: String,
         @Query("api_token") apiToken: String
     ): NewsApiResponse
+
+
+    @GET("v1/news/all")
+    suspend fun searchNews(
+        @Query("search") query: String,
+        @Query("api_token") apiToken: String
+    ): NewsApiResponse
 }

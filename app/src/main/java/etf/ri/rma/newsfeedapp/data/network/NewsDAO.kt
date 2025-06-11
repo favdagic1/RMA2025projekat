@@ -240,6 +240,40 @@ class NewsDAO {
         return fetchedItems
     }
 
+    suspend fun searchNews(searchString: String): List<NewsItem> {
+        val query = searchString
+            .replace(" ILI ", " OR ")
+            .replace(" I ", " AND ")
+
+        val response = apiService.searchNews(query, API_TOKEN)
+        val fetchedItems = response.data.map { dto ->
+            val primaryCat = dto.categories?.firstOrNull() ?: ""
+            NewsItem(
+                uuid = dto.uuid,
+                title = dto.title,
+                snippet = dto.snippet ?: "",
+                imageUrl = dto.imageUrl,
+                category = primaryCat,
+                isFeatured = false,
+                imageTags = arrayListOf(),
+                source = dto.source ?: "",
+                publishedDate = dto.publishedAt ?: ""
+            )
+        }
+
+        fetchedItems.forEach { item ->
+            val idx = allStories.indexOfFirst { it.uuid == item.uuid }
+            if (idx >= 0) {
+                val existing = allStories.removeAt(idx)
+                allStories.add(0, existing)
+            } else {
+                allStories.add(0, item)
+            }
+        }
+
+        return fetchedItems
+    }
+
     companion object {
         fun createWithBaseUrl(baseUrl: String): NewsDAO {
             val retrofit = Retrofit.Builder()

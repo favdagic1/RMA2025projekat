@@ -8,12 +8,20 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import etf.ri.rma.newsfeedapp.viewmodel.NewsViewModel
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 
 @Composable
 fun NewsFeedScreen(navController: NavHostController) {
     val vm: NewsViewModel = viewModel()
     val newsList by vm.displayListFlow.collectAsState()
     var selectedCategory by remember { mutableStateOf("Sve") }
+    var searchQuery by remember { mutableStateOf("") }
 
     // Pratimo filtere iz SavedStateHandle-a
     val currentEntry = navController.currentBackStackEntry
@@ -67,6 +75,25 @@ fun NewsFeedScreen(navController: NavHostController) {
                 }
             }
         )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.weight(1f),
+                label = { Text("Pretraga") }
+            )
+            Button(
+                onClick = { vm.searchNews(searchQuery) },
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text("Traži")
+            }
+        }
+
 
         if (newsList.isEmpty()) {
             CircularProgressIndicator(modifier = Modifier.fillMaxSize())

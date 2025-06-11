@@ -125,6 +125,20 @@ class NewsViewModel : ViewModel() {
     }
 
 
+    fun searchNews(searchString: String) {
+        viewModelScope.launch {
+            try {
+                val lista = newsDAO.searchNews(searchString)
+                _allStoriesFlow.value = newsDAO.getAllStories()
+                _displayListFlow.value = lista
+            } catch (e: Exception) {
+                _displayListFlow.value = emptyList()
+            }
+        }
+    }
+
+
+
 
 
     /** Učitava slične vijesti za zadani UUID */
