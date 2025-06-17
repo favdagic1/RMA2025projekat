@@ -17,7 +17,7 @@ class NewsViewModel : ViewModel() {
 
     // 1) Retrofit i DAO-e
     private val newsRetrofit = Retrofit.Builder()
-        .baseUrl("https://api.thenewsapi.com/v1/news/")
+        .baseUrl("https://api.thenewsapi.com")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

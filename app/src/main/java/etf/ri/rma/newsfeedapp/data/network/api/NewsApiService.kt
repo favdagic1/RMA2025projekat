@@ -5,13 +5,13 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface NewsApiService {
-    @GET("v1/news")
+    @GET("v1/news/top")
     suspend fun getTopStoriesByCategory(
         @Query("categories") categories: String,
         @Query("api_token") apiToken: String
     ): NewsApiResponse
 
-    @GET("news/similar")
+    @GET("v1/news/similar")
     suspend fun getSimilarStories(
         @Query("uuid") uuid: String,
         @Query("api_token") apiToken: String

@@ -37,7 +37,12 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
 
     val current = remember(allNews, newsId) {
         allNews.find { it.uuid == newsId }
-    } ?: return
+    }
+
+    if (current == null) {
+        Text("Vijest nije pronađena.", modifier = Modifier.padding(16.dp))
+        return
+    }
 
 
     LaunchedEffect(newsId) {
