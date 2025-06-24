@@ -9,7 +9,7 @@ data class NewsItem(
     val category: String,
 
     var isFeatured: Boolean,
-    val imageTags: ArrayList<String> = arrayListOf(),
+    val imageTags: ArrayList<etf.ri.rma.newsfeedapp.data.ImaggaTag> = arrayListOf(),
     val source: String,
     val publishedDate: String
 

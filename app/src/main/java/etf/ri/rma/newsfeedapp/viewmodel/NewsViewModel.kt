@@ -46,8 +46,8 @@ class NewsViewModel : ViewModel() {
     val similarStoriesFlow: StateFlow<List<NewsItem>> = _similarStoriesFlow
 
     // 5) Flow za tagove slike
-    private val _imageTagsFlow = MutableStateFlow<List<String>>(emptyList())
-    val imageTagsFlow: StateFlow<List<String>> = _imageTagsFlow
+    private val _imageTagsFlow = MutableStateFlow<List<etf.ri.rma.newsfeedapp.data.ImaggaTag>>(emptyList())
+    val imageTagsFlow: StateFlow<List<etf.ri.rma.newsfeedapp.data.ImaggaTag>> = _imageTagsFlow
 
     // 6) Mapiranje bosanski → engleski ključevi
     private val categoryMap = mapOf(
@@ -157,7 +157,8 @@ class NewsViewModel : ViewModel() {
     fun loadImageTags(imageUrl: String) {
         viewModelScope.launch {
             try {
-                val tags = imaggaDAO.getTags(imageUrl)
+                val tagStrings = imaggaDAO.getTags(imageUrl)
+                val tags = tagStrings.map { etf.ri.rma.newsfeedapp.data.ImaggaTag(it) }
                 _imageTagsFlow.value = tags
                 val all = newsDAO.getAllStories().toMutableList()
                 val item = all.find { it.imageUrl == imageUrl }

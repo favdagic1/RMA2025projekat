@@ -132,7 +132,8 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
                 Text("Nema tagova ili se učitavaju...")
             } else {
                 imageTags.forEach { tag ->
-                    Text("- $tag")
+                    Text("- ${tag.value}")
+
                 }
             }
             Spacer(Modifier.height(16.dp))

@@ -125,7 +125,8 @@ abstract class SavedNewsDAO {
         imageUrl = imageUrl,
         category = category,
         isFeatured = isFeatured,
-        imageTags = ArrayList(tags),
+        imageTags = ArrayList(tags.map { etf.ri.rma.newsfeedapp.data.ImaggaTag(it) }),
+
         source = source,
         publishedDate = publishedDate
     )

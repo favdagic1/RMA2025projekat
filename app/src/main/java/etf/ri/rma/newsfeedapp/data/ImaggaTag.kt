@@ -1,4 +1,5 @@
 package etf.ri.rma.newsfeedapp.data
 
-class ImaggaTag {
-}
+data class ImaggaTag(
+    val value: String
+)
