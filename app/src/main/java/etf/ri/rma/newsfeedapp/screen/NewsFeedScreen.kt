@@ -71,6 +71,8 @@ fun NewsFeedScreen(navController: NavHostController) {
                     savedStateHandle?.remove<String>("filterStartDate")
                     savedStateHandle?.remove<String>("filterEndDate")
                     savedStateHandle?.remove<ArrayList<String>>("filterUnwantedWords")
+                    savedStateHandle?.set("filterCategory", cat)
+
                     vm.loadTopStories(cat)
                 }
             }

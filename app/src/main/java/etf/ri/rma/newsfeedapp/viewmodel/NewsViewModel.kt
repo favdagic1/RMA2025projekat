@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
+
 class NewsViewModel : ViewModel() {
 
     // 1) Retrofit i DAO-e
@@ -22,7 +24,7 @@ class NewsViewModel : ViewModel() {
         .build()
 
     private val imaggaRetrofit = Retrofit.Builder()
-        .baseUrl("https://api.imagga.com/v2/")
+        .baseUrl("https://api.imagga.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

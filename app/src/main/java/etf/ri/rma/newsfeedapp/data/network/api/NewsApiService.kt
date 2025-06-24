@@ -11,9 +11,9 @@ interface NewsApiService {
         @Query("api_token") apiToken: String
     ): NewsApiResponse
 
-    @GET("v1/news/similar")
+    @GET("v1/news/similar/{uuid}")
     suspend fun getSimilarStories(
-        @Query("uuid") uuid: String,
+        @retrofit2.http.Path("uuid") uuid: String,
         @Query("api_token") apiToken: String
     ): NewsApiResponse
 
