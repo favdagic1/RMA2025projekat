@@ -8,9 +8,6 @@
       <SelectionState runConfigName="Tests in 'etf.ri.rma.newsfeedapp'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="TestNewsType">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="TestS1">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
