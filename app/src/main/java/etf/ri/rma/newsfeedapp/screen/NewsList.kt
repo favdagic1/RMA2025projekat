@@ -30,7 +30,10 @@ fun NewsList(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onItemClick(item.uuid) }
+                    .clickable {
+                        println("DEBUG: Klik na vijest: ${item.uuid} - ${item.title}")
+                        onItemClick(item.uuid)
+                    }
             ) {
                 if (item.isFeatured) {
                     FeaturedNewsCard(newsItem = item)

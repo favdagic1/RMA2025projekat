@@ -15,9 +15,11 @@ class NewsDAO {
     private val CACHE_DURATION_MS = 30_000L
     private val similarCache = mutableMapOf<String, List<NewsItem>>()
     private val API_TOKEN = "g1pNUtBbRf99dRokQ3zRoFfsjcAnIjr3545puKCS"
+    private val instanceId = System.currentTimeMillis() // za debug
 
     init {
-
+        println("DEBUG DAO: Nova instanca NewsDAO kreirana sa ID: $instanceId")
+        // Dodaj lokalne vijesti
         allStories.addAll(
             listOf(
                 NewsItem(
@@ -141,7 +143,24 @@ class NewsDAO {
         return allStories.toList()
     }
 
+    /** Dodaj ili ažuriraj vijest u lokalnoj listi */
+    private fun addOrUpdateStory(item: NewsItem) {
+        println("DEBUG DAO ($instanceId): Dodajem/ažuriram vijest: ${item.uuid} - ${item.title}")
+        val existingIndex = allStories.indexOfFirst { it.uuid == item.uuid }
+        if (existingIndex >= 0) {
+            // Ažuriraj postojeću vijest
+            println("DEBUG DAO ($instanceId): Ažuriram postojeću vijest na poziciji $existingIndex")
+            allStories[existingIndex] = item
+        } else {
+            // Dodaj novu vijest na početak liste
+            println("DEBUG DAO ($instanceId): Dodajem novu vijest, trenutno imam ${allStories.size} vijesti")
+            allStories.add(0, item)
+            println("DEBUG DAO ($instanceId): Nakon dodavanja imam ${allStories.size} vijesti")
+        }
+    }
+
     suspend fun getTopStoriesByCategory(category: String): List<NewsItem> {
+        println("DEBUG DAO ($instanceId): getTopStoriesByCategory pozvan za kategoriju: $category")
         val now = System.currentTimeMillis()
         var lower = category.lowercase()
 
@@ -156,12 +175,15 @@ class NewsDAO {
 
         topStoriesCache[lower]?.let { (cachedList, timestamp) ->
             if (now - timestamp < CACHE_DURATION_MS) {
+                println("DEBUG DAO ($instanceId): Vraćam cache-ovane vijesti za $lower")
                 return cachedList
             }
         }
 
+        println("DEBUG DAO ($instanceId): Pozivam API za kategoriju $lower")
         val response = apiService.getTopStoriesByCategory(lower, API_TOKEN)
         val dtoList = response.data.take(3)
+        println("DEBUG DAO ($instanceId): API vratio ${dtoList.size} vijesti")
 
         val fetchedItems = dtoList.map { dto ->
             val primaryCat = dto.categories?.firstOrNull() ?: ""
@@ -178,24 +200,22 @@ class NewsDAO {
             )
         }
 
+        // Označava da su postojeće featured vijesti više nisu featured
         allStories.forEach { it ->
             if (it.category == lower && it.isFeatured) {
                 it.isFeatured = false
             }
         }
 
+        // Dodaj nove featured vijesti
+        println("DEBUG DAO ($instanceId): Dodajem ${fetchedItems.size} fetched vijesti u allStories")
         fetchedItems.forEach { item ->
-            val idx = allStories.indexOfFirst { it.uuid == item.uuid }
-            if (idx >= 0) {
-                val existing = allStories.removeAt(idx)
-                existing.isFeatured = true
-                allStories.add(0, existing)
-            } else {
-                allStories.add(0, item)
-            }
+            println("DEBUG DAO ($instanceId): Pozivam addOrUpdateStory za ${item.uuid}")
+            addOrUpdateStory(item)
         }
 
         topStoriesCache[lower] = Pair(fetchedItems, now)
+        println("DEBUG DAO ($instanceId): getTopStoriesByCategory završen, ukupno vijesti: ${allStories.size}")
         return fetchedItems
     }
 
@@ -226,14 +246,9 @@ class NewsDAO {
             )
         }
 
+        // Dodaj slične vijesti u glavnu listu
         fetchedItems.forEach { item ->
-            val idx = allStories.indexOfFirst { it.uuid == item.uuid }
-            if (idx >= 0) {
-                val existing = allStories.removeAt(idx)
-                allStories.add(0, existing)
-            } else {
-                allStories.add(0, item)
-            }
+            addOrUpdateStory(item)
         }
 
         similarCache[uuid] = fetchedItems
@@ -261,27 +276,42 @@ class NewsDAO {
             )
         }
 
+        // Dodaj pretraživane vijesti u glavnu listu
         fetchedItems.forEach { item ->
-            val idx = allStories.indexOfFirst { it.uuid == item.uuid }
-            if (idx >= 0) {
-                val existing = allStories.removeAt(idx)
-                allStories.add(0, existing)
-            } else {
-                allStories.add(0, item)
-            }
+            addOrUpdateStory(item)
         }
 
         return fetchedItems
     }
 
+    /** Pronađi vijest po UUID-u */
+    fun findStoryByUuid(uuid: String): NewsItem? {
+        println("DEBUG DAO ($instanceId): findStoryByUuid pozvan za UUID: $uuid")
+        println("DEBUG DAO ($instanceId): Trenutno imam ${allStories.size} vijesti u allStories")
+        val found = allStories.find { it.uuid == uuid }
+        println("DEBUG DAO ($instanceId): findStoryByUuid rezultat: ${found?.title ?: "null"}")
+        return found
+    }
+
     companion object {
+        @Volatile
+        private var INSTANCE: NewsDAO? = null
+
+        fun getInstance(): NewsDAO {
+            return INSTANCE ?: synchronized(this) {
+                val instance = NewsDAO()
+                INSTANCE = instance
+                instance
+            }
+        }
+
         fun createWithBaseUrl(baseUrl: String): NewsDAO {
             val retrofit = Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
             val service = retrofit.create(NewsApiService::class.java)
-            val dao = NewsDAO()
+            val dao = getInstance()
             dao.setApiService(service)
             return dao
         }

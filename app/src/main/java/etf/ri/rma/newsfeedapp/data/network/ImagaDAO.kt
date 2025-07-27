@@ -18,18 +18,35 @@ class ImagaDAO {
     }
 
     suspend fun getTags(imageUrl: String): List<String> {
+        println("DEBUG IMAGGA: getTags pozvan za URL: $imageUrl")
+
         try {
             URL(imageUrl)
         } catch (e: MalformedURLException) {
+            println("DEBUG IMAGGA: Neispravan URL: $imageUrl")
             throw InvalidImageURLException("Neispravan URL: $imageUrl")
         }
 
-        tagsCache[imageUrl]?.let { return it }
+        tagsCache[imageUrl]?.let {
+            println("DEBUG IMAGGA: Vraćam cache-ovane tagove za $imageUrl")
+            return it
+        }
 
-        val response = apiService.getTags(imageUrl, IMAGGA_API_TOKEN)
-        val fetchedTags = response.result.tags.map { it.tag.en }
-        tagsCache[imageUrl] = fetchedTags
-        return fetchedTags
+        try {
+            println("DEBUG IMAGGA: Pozivam Imagga API za $imageUrl")
+            val response = apiService.getTags(imageUrl, IMAGGA_API_TOKEN)
+            println("DEBUG IMAGGA: API odgovorio, broj tagova: ${response.result.tags.size}")
+
+            val fetchedTags = response.result.tags.map { it.tag.en }
+            println("DEBUG IMAGGA: Tagovi: ${fetchedTags.joinToString(", ")}")
+
+            tagsCache[imageUrl] = fetchedTags
+            return fetchedTags
+        } catch (e: Exception) {
+            println("DEBUG IMAGGA: Greška pri pozivanju API-ja: ${e.message}")
+            println("DEBUG IMAGGA: Stack trace: ${e.printStackTrace()}")
+            return emptyList()
+        }
     }
 
     companion object {

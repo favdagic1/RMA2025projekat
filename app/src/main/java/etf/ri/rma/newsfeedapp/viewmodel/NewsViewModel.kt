@@ -13,9 +13,11 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-
-
 class NewsViewModel : ViewModel() {
+
+    init {
+        println("DEBUG VM: NewsViewModel kreiran")
+    }
 
     // 1) Retrofit i DAO-e
     private val newsRetrofit = Retrofit.Builder()
@@ -24,15 +26,14 @@ class NewsViewModel : ViewModel() {
         .build()
 
     private val imaggaRetrofit = Retrofit.Builder()
-        .baseUrl("https://api.imagga.com/")
+        .baseUrl("https://api.imagga.com/v2/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     private val newsApiService: NewsApiService = newsRetrofit.create(NewsApiService::class.java)
     private val imaggaApiService: ImagaApiService = imaggaRetrofit.create(ImagaApiService::class.java)
 
-
-    private val newsDAO = NewsDAO().apply { setApiService(newsApiService) }
+    private val newsDAO = NewsDAO.createWithBaseUrl("https://api.thenewsapi.com")
     private val imaggaDAO = ImagaDAO().apply { setApiService(imaggaApiService) }
 
     // 2) Flow za sve vijesti
@@ -59,6 +60,23 @@ class NewsViewModel : ViewModel() {
         "Nauka/tehnologija" to "science"
     )
 
+    /** Dodana funkcija za pronalaženje vijesti po UUID-u */
+    fun getNewsItemById(uuid: String): NewsItem? {
+        val found = newsDAO.findStoryByUuid(uuid)
+        println("DEBUG: Tražim UUID: $uuid, pronašao: ${found?.title}")
+        return found
+    }
+
+    /** Debug funkcija za brojanje vijesti */
+    fun getAllStoriesCount(): Int {
+        val count = newsDAO.getAllStories().size
+        println("DEBUG: Ukupno vijesti u DAO: $count")
+        newsDAO.getAllStories().forEach {
+            println("DEBUG: - ${it.uuid}: ${it.title}")
+        }
+        return count
+    }
+
     /** Učitava top vijesti za zadanu kategoriju */
     fun loadTopStories(bosanskaKategorija: String) {
         val eng = categoryMap[bosanskaKategorija] ?: "all"
@@ -73,8 +91,9 @@ class NewsViewModel : ViewModel() {
 
                 try {
                     newsDAO.getTopStoriesByCategory(eng)
-                    _allStoriesFlow.value = newsDAO.getAllStories()
-                    _displayListFlow.value = newsDAO.getAllStories().filter { it.category == eng }
+                    val updated = newsDAO.getAllStories()
+                    _allStoriesFlow.value = updated
+                    _displayListFlow.value = updated.filter { it.category == eng }
                 } catch (e: Exception) {
                     // Neuspješan mrežni poziv ne smije srušiti aplikaciju
                 }
@@ -126,12 +145,12 @@ class NewsViewModel : ViewModel() {
         }
     }
 
-
     fun searchNews(searchString: String) {
         viewModelScope.launch {
             try {
                 val lista = newsDAO.searchNews(searchString)
-                _allStoriesFlow.value = newsDAO.getAllStories()
+                val updated = newsDAO.getAllStories()
+                _allStoriesFlow.value = updated
                 _displayListFlow.value = lista
             } catch (e: Exception) {
                 _displayListFlow.value = emptyList()
@@ -139,15 +158,13 @@ class NewsViewModel : ViewModel() {
         }
     }
 
-
-
-
-
     /** Učitava slične vijesti za zadani UUID */
     fun loadSimilarStories(uuid: String) {
         viewModelScope.launch {
             try {
                 val lista = newsDAO.getSimilarStories(uuid)
+                val updated = newsDAO.getAllStories()
+                _allStoriesFlow.value = updated
                 _similarStoriesFlow.value = lista
             } catch (e: Exception) {
                 _similarStoriesFlow.value = emptyList()
@@ -157,18 +174,25 @@ class NewsViewModel : ViewModel() {
 
     /** Učitava tagove za tu sliku */
     fun loadImageTags(imageUrl: String) {
+        println("DEBUG VM: loadImageTags pozvan za URL: $imageUrl")
         viewModelScope.launch {
             try {
+                println("DEBUG VM: Pozivam imaggaDAO.getTags")
                 val tagStrings = imaggaDAO.getTags(imageUrl)
+                println("DEBUG VM: Dobio ${tagStrings.size} tagova")
                 val tags = tagStrings.map { etf.ri.rma.newsfeedapp.data.ImaggaTag(it) }
                 _imageTagsFlow.value = tags
+                println("DEBUG VM: Ažurirao imageTagsFlow sa ${tags.size} tagova")
+
                 val all = newsDAO.getAllStories().toMutableList()
                 val item = all.find { it.imageUrl == imageUrl }
                 item?.let {
                     it.imageTags.clear()
                     it.imageTags.addAll(tags)
+                    println("DEBUG VM: Dodao tagove u NewsItem")
                 }
             } catch (e: Exception) {
+                println("DEBUG VM: Greška pri učitavanju tagova: ${e.message}")
                 _imageTagsFlow.value = emptyList()
             }
         }
