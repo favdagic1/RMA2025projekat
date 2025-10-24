@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.Alignment
+import etf.ri.rma.newsfeedapp.util.Logger
 
 @Composable
 fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
@@ -31,33 +32,46 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
     // State za loading i error
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoadingTags by remember { mutableStateOf(false) }
 
     // State za trenutnu vijest
     var currentNews by remember { mutableStateOf<NewsItem?>(null) }
     val similarList by vm.similarStoriesFlow.collectAsState()
     val imageTags by vm.imageTagsFlow.collectAsState()
 
+    // Prati kada tagovi stignu
+    LaunchedEffect(imageTags) {
+        if (imageTags.isNotEmpty()) {
+            isLoadingTags = false
+        }
+    }
+
     // Pokušaj da pronađe vijest i učita potrebne podatke
     LaunchedEffect(newsId) {
         isLoading = true
         errorMessage = null
+        isLoadingTags = false
+        vm.clearImageTags() // Resetuj prethodne tagove
 
-        println("DEBUG: Tražim vijest sa ID: $newsId")
+        Logger.d("Tražim vijest sa ID: $newsId", "NewsDetailsScreen")
 
         // Prvo pokušaj da pronađe vijest u postojećim podacima
         currentNews = vm.getNewsItemById(newsId)
 
-        println("DEBUG: Pronađena vijest: ${currentNews?.title}")
-        println("DEBUG: Ukupno vijesti u DAO: ${vm.getAllStoriesCount()}")
+        Logger.d("Pronađena vijest: ${currentNews?.title}", "NewsDetailsScreen")
+        Logger.d("Ukupno vijesti u DAO: ${vm.getAllStoriesCount()}", "NewsDetailsScreen")
 
         if (currentNews != null) {
             // Vijest je pronadjena, učitaj dodatne podatke
             vm.loadSimilarStories(newsId)
-            currentNews?.imageUrl?.let { vm.loadImageTags(it) }
+            currentNews?.imageUrl?.let {
+                isLoadingTags = true
+                vm.loadImageTags(it)
+            }
             isLoading = false
         } else {
             // Vijest nije pronadjena u postojećim podacima
-            println("DEBUG: Vijest nije pronađena, pokušavam ponovno...")
+            Logger.d("Vijest nije pronađena, pokušavam ponovno...", "NewsDetailsScreen")
 
             // Sačekaj kratko i pokušaj ponovno (možda se još učitava)
             kotlinx.coroutines.delay(500)
@@ -65,7 +79,10 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
 
             if (currentNews != null) {
                 vm.loadSimilarStories(newsId)
-                currentNews?.imageUrl?.let { vm.loadImageTags(it) }
+                currentNews?.imageUrl?.let {
+                    isLoadingTags = true
+                    vm.loadImageTags(it)
+                }
                 isLoading = false
             } else {
                 errorMessage = "Vijest nije pronađena. ID: $newsId"
@@ -179,11 +196,21 @@ fun NewsDetailsScreen(navController: NavHostController, newsId: String) {
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(Modifier.height(8.dp))
-                        if (imageTags.isEmpty()) {
-                            Text("Nema tagova ili se učitavaju...")
-                        } else {
-                            imageTags.forEach { tag ->
-                                Text("- ${tag.value}")
+                        when {
+                            isLoadingTags && imageTags.isEmpty() -> {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Učitavanje tagova...", style = MaterialTheme.typography.bodySmall)
+                                }
+                            }
+                            imageTags.isNotEmpty() -> {
+                                imageTags.forEach { tag ->
+                                    Text("- ${tag.value}")
+                                }
+                            }
+                            else -> {
+                                Text("Tagovi nisu dostupni", style = MaterialTheme.typography.bodySmall)
                             }
                         }
                         Spacer(Modifier.height(16.dp))

@@ -12,14 +12,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.Alignment
 
 @Composable
 fun NewsFeedScreen(navController: NavHostController) {
     val vm: NewsViewModel = viewModel()
     val newsList by vm.displayListFlow.collectAsState()
+    val errorMessage by vm.errorFlow.collectAsState()
     var selectedCategory by remember { mutableStateOf("Sve") }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -89,16 +95,42 @@ fun NewsFeedScreen(navController: NavHostController) {
                 label = { Text("Pretraga") }
             )
             Button(
-                onClick = { vm.searchNews(searchQuery) },
-                modifier = Modifier.padding(start = 8.dp)
+                onClick = {
+                    if (searchQuery.isNotBlank()) {
+                        vm.searchNews(searchQuery)
+                    }
+                },
+                modifier = Modifier.padding(start = 8.dp),
+                enabled = searchQuery.isNotBlank()
             ) {
                 Text("Traži")
             }
         }
 
+        // Prikaz error poruke ako postoji
+        errorMessage?.let { error ->
+            androidx.compose.material3.Snackbar(
+                modifier = Modifier.padding(8.dp),
+                action = {
+                    androidx.compose.material3.TextButton(onClick = { /* Dismissed */ }) {
+                        Text("OK")
+                    }
+                }
+            ) {
+                Text(error)
+            }
+        }
 
-        if (newsList.isEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.fillMaxSize())
+        if (newsList.isEmpty() && errorMessage == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Učitavanje vijesti...", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        } else if (newsList.isEmpty() && errorMessage != null) {
+            MessageCard("Nema dostupnih vijesti")
         } else {
             NewsList(
                 newsItems = newsList,

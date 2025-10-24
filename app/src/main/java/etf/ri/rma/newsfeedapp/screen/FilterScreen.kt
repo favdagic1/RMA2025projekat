@@ -164,16 +164,32 @@ fun FilterScreen(navController: NavHostController) {
         }
 
         // --- LISTA NEPOŽELJNIH RIJEČI (scrollable) ---
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp)
-                .testTag("filter_unwanted_list"),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            contentPadding = PaddingValues(vertical = 4.dp)
-        ) {
-            items(unwantedWords) { word ->
-                Text(text = word)
+        if (unwantedWords.isEmpty()) {
+            Text(
+                text = "Nema nepoželjnih riječi",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+                    .testTag("filter_unwanted_list"),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(vertical = 4.dp)
+            ) {
+                items(unwantedWords) { word ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = word)
+                        TextButton(onClick = { unwantedWords.remove(word) }) {
+                            Text("Ukloni")
+                        }
+                    }
+                }
             }
         }
 

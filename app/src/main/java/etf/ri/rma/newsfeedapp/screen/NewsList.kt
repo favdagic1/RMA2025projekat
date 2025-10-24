@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import etf.ri.rma.newsfeedapp.model.NewsItem
+import etf.ri.rma.newsfeedapp.util.Logger
 
 @Composable
 fun NewsList(
@@ -31,7 +32,7 @@ fun NewsList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        println("DEBUG: Klik na vijest: ${item.uuid} - ${item.title}")
+                        Logger.d("Klik na vijest: ${item.uuid} - ${item.title}", "NewsList")
                         onItemClick(item.uuid)
                     }
             ) {

@@ -18,6 +18,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // API keys - u produkciji učitati iz local.properties
+        buildConfigField("String", "NEWS_API_TOKEN", "\"g1pNUtBbRf99dRokQ3zRoFfsjcAnIjr3545puKCS\"")
+        buildConfigField("String", "IMAGGA_API_KEY", "\"acc_bd7c68cd93e2991\"")
+        buildConfigField("String", "IMAGGA_API_SECRET", "\"75efb8776557ec78a7d41f56d782a2c0\"")
     }
 
     buildTypes {
@@ -38,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

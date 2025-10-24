@@ -3,6 +3,7 @@ package etf.ri.rma.newsfeedapp.data.network
 import etf.ri.rma.newsfeedapp.data.network.api.NewsApiService
 import etf.ri.rma.newsfeedapp.data.network.exception.InvalidUUIDException
 import etf.ri.rma.newsfeedapp.model.NewsItem
+import etf.ri.rma.newsfeedapp.util.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
@@ -14,11 +15,12 @@ class NewsDAO {
     private val topStoriesCache = mutableMapOf<String, Pair<List<NewsItem>, Long>>()
     private val CACHE_DURATION_MS = 30_000L
     private val similarCache = mutableMapOf<String, List<NewsItem>>()
-    private val API_TOKEN = "g1pNUtBbRf99dRokQ3zRoFfsjcAnIjr3545puKCS"
+
+    private val API_TOKEN = etf.ri.rma.newsfeedapp.BuildConfig.NEWS_API_TOKEN
     private val instanceId = System.currentTimeMillis() // za debug
 
     init {
-        println("DEBUG DAO: Nova instanca NewsDAO kreirana sa ID: $instanceId")
+        Logger.d("Nova instanca NewsDAO kreirana sa ID: $instanceId", "NewsDAO")
         // Dodaj lokalne vijesti
         allStories.addAll(
             listOf(
@@ -145,22 +147,20 @@ class NewsDAO {
 
     /** Dodaj ili ažuriraj vijest u lokalnoj listi */
     private fun addOrUpdateStory(item: NewsItem) {
-        println("DEBUG DAO ($instanceId): Dodajem/ažuriram vijest: ${item.uuid} - ${item.title}")
+        Logger.d("Dodajem/ažuriram vijest: ${item.uuid} - ${item.title}", "NewsDAO")
         val existingIndex = allStories.indexOfFirst { it.uuid == item.uuid }
         if (existingIndex >= 0) {
-            // Ažuriraj postojeću vijest
-            println("DEBUG DAO ($instanceId): Ažuriram postojeću vijest na poziciji $existingIndex")
+            Logger.d("Ažuriram postojeću vijest na poziciji $existingIndex", "NewsDAO")
             allStories[existingIndex] = item
         } else {
-            // Dodaj novu vijest na početak liste
-            println("DEBUG DAO ($instanceId): Dodajem novu vijest, trenutno imam ${allStories.size} vijesti")
+            Logger.d("Dodajem novu vijest, trenutno imam ${allStories.size} vijesti", "NewsDAO")
             allStories.add(0, item)
-            println("DEBUG DAO ($instanceId): Nakon dodavanja imam ${allStories.size} vijesti")
+            Logger.d("Nakon dodavanja imam ${allStories.size} vijesti", "NewsDAO")
         }
     }
 
     suspend fun getTopStoriesByCategory(category: String): List<NewsItem> {
-        println("DEBUG DAO ($instanceId): getTopStoriesByCategory pozvan za kategoriju: $category")
+        Logger.d("getTopStoriesByCategory pozvan za kategoriju: $category", "NewsDAO")
         val now = System.currentTimeMillis()
         var lower = category.lowercase()
 
@@ -175,15 +175,15 @@ class NewsDAO {
 
         topStoriesCache[lower]?.let { (cachedList, timestamp) ->
             if (now - timestamp < CACHE_DURATION_MS) {
-                println("DEBUG DAO ($instanceId): Vraćam cache-ovane vijesti za $lower")
+                Logger.d("Vraćam cache-ovane vijesti za $lower", "NewsDAO")
                 return cachedList
             }
         }
 
-        println("DEBUG DAO ($instanceId): Pozivam API za kategoriju $lower")
+        Logger.d("Pozivam API za kategoriju $lower", "NewsDAO")
         val response = apiService.getTopStoriesByCategory(lower, API_TOKEN)
         val dtoList = response.data.take(3)
-        println("DEBUG DAO ($instanceId): API vratio ${dtoList.size} vijesti")
+        Logger.d("API vratio ${dtoList.size} vijesti", "NewsDAO")
 
         val fetchedItems = dtoList.map { dto ->
             val primaryCat = dto.categories?.firstOrNull() ?: ""
@@ -208,14 +208,13 @@ class NewsDAO {
         }
 
         // Dodaj nove featured vijesti
-        println("DEBUG DAO ($instanceId): Dodajem ${fetchedItems.size} fetched vijesti u allStories")
+        Logger.d("Dodajem ${fetchedItems.size} fetched vijesti u allStories", "NewsDAO")
         fetchedItems.forEach { item ->
-            println("DEBUG DAO ($instanceId): Pozivam addOrUpdateStory za ${item.uuid}")
             addOrUpdateStory(item)
         }
 
         topStoriesCache[lower] = Pair(fetchedItems, now)
-        println("DEBUG DAO ($instanceId): getTopStoriesByCategory završen, ukupno vijesti: ${allStories.size}")
+        Logger.d("getTopStoriesByCategory završen, ukupno vijesti: ${allStories.size}", "NewsDAO")
         return fetchedItems
     }
 
@@ -286,10 +285,10 @@ class NewsDAO {
 
     /** Pronađi vijest po UUID-u */
     fun findStoryByUuid(uuid: String): NewsItem? {
-        println("DEBUG DAO ($instanceId): findStoryByUuid pozvan za UUID: $uuid")
-        println("DEBUG DAO ($instanceId): Trenutno imam ${allStories.size} vijesti u allStories")
+        Logger.d("findStoryByUuid pozvan za UUID: $uuid", "NewsDAO")
+        Logger.d("Trenutno imam ${allStories.size} vijesti u allStories", "NewsDAO")
         val found = allStories.find { it.uuid == uuid }
-        println("DEBUG DAO ($instanceId): findStoryByUuid rezultat: ${found?.title ?: "null"}")
+        Logger.d("findStoryByUuid rezultat: ${found?.title ?: "null"}", "NewsDAO")
         return found
     }
 
